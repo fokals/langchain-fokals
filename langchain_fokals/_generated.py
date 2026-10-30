@@ -276,7 +276,7 @@ class FokalsCountCompanies(FokalsBaseTool):
     """Count companies: the Fokals count_companies endpoint as a LangChain tool."""
 
     name: str = "fokals_count_companies"
-    description: str = "Counts the companies that match a set of filters, and says what it would cost to get them. Free. Takes the same filters as fokals_find_companies. Use it before fokals_find_companies, so the person knows the size and the price of what they are asking for."
+    description: str = "Counts the companies that match a set of filters, and says what it would cost to get them. Free. Takes the same filters as fokals_find_companies, but not part of a name: to look for one company, use fokals_identify_company. Fewer than 10 is given as such. Use it before fokals_find_companies, so the person knows the size and the price of what they are asking for."
     args_schema: type[BaseModel] = CountCompaniesInput
     endpoint: str = "count_companies"
 
@@ -538,7 +538,7 @@ class FokalsIdentifyCompany(FokalsBaseTool):
     """Which company is meant: the Fokals identify_company endpoint as a LangChain tool."""
 
     name: str = "fokals_identify_company"
-    description: str = "Lists the companies a name or a website address could mean, the surest first, each with its website, country, industry and whether it has been read. Free. Use it when a name is ambiguous or a paid tool said a company is not held, then pass the id of the right one to the other tools."
+    description: str = "Lists the companies a name or a website address could mean, the surest first, each with its website, its country and whether it has been read. Free. Use it when a name is ambiguous or a paid tool said a company is not held, then pass the id of the right one to the other tools."
     args_schema: type[BaseModel] = IdentifyCompanyInput
     endpoint: str = "identify_company"
 
