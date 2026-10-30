@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "langchain-fokals"
+dynamic = ["version"]
+description = "LangChain tools for Fokals, AI-powered company intelligence: find, enrich and profile companies by technology, hiring, funding, buying intent and company health."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10,<4.0"
+authors = [{ name = "Fokals", email = "partners@fokals.com" }]
+keywords = ["langchain", "fokals", "company intelligence", "company data", "agents", "tools"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+dependencies = [
+    "langchain-core>=1.4.0,<2.0.0",
+    "httpx>=0.27.0,<1.0.0",
+]
+
+[project.urls]
+Homepage = "https://www.fokals.com"
+Documentation = "https://github.com/fokals/langchain-fokals#readme"
+Source = "https://github.com/fokals/langchain-fokals"
+Issues = "https://github.com/fokals/langchain-fokals/issues"
+"API reference" = "https://www.fokals.com/docs/api"
+
+[dependency-groups]
+test = [
+    "langchain-tests==1.1.9",
+    "pytest>=8",
+    "pytest-asyncio>=1.3",
+    "pytest-socket>=0.7",
+]
+lint = ["ruff>=0.8"]
+
+[tool.hatch.version]
+path = "langchain_fokals/_version.py"
+
+[tool.hatch.build.targets.sdist]
+include = ["langchain_fokals", "tests", "scripts", "README.md", "LICENSE"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["langchain_fokals"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["UP007", "UP045"]
+
+[tool.ruff.lint.per-file-ignores]
+"langchain_fokals/_generated.py" = ["E501"]
