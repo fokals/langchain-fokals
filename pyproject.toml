@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "langchain-fokals"
 dynamic = ["version"]
-description = "LangChain tools for Fokals, AI-powered company intelligence: find, enrich and profile companies by technology, hiring, funding, buying intent and company health."
+description = "LangChain tools for Fokals, AI-powered company intelligence to find, enrich and profile companies by technology, hiring, funding, buying intent and company health."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
