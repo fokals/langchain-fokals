@@ -878,13 +878,566 @@ class FokalsLikelyNext(FokalsBaseTool):
     endpoint: str = "likely_next"
 
 
+class IntentHistoryInput(BaseModel):
+    """Arguments of intent_history."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    companies: list[str] = Field(
+        min_length=1,
+        max_length=1000,
+        description='The person\'s own companies, each as a website address ("acme.com"), a name or an id from an earlier answer. At most 25 a call.',
+    )
+    weeks: Optional[int] = Field(
+        default=None, ge=1, le=12, description="How many weeks to return, oldest first. 12 unless given."
+    )
+    topic: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=80,
+        description='One buying topic to follow, by name or id: "Marketing automation". fokals_list_filters with kind buying_topics has them all.',
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsIntentHistory(FokalsBaseTool):
+    """Buying intent week by week: the Fokals intent_history endpoint as a LangChain tool."""
+
+    name: str = "fokals_intent_history"
+    description: str = "The buying topics each of the person's companies has shown signs of, week by week for up to 12 weeks: for each week, each topic with its score from 0 to 100, whether it was surging (rising sharply against the company's own recent weeks) and how many signals were behind it, with the company's latest signals by date and kind. Give a topic to follow just that one. Use it to see whether interest is building or fading, to time an approach, or to explain a score. A company with no intent held costs nothing and is named as such. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = IntentHistoryInput
+    endpoint: str = "intent_history"
+
+
+class SalesTeamInput(BaseModel):
+    """Arguments of sales_team."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    companies: list[str] = Field(
+        min_length=1,
+        max_length=1000,
+        description='The person\'s own companies, each as a website address ("acme.com"), a name or an id from an earlier answer. At most 25 a call.',
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsSalesTeam(FokalsBaseTool):
+    """Sales team from job ads: the Fokals sales_team endpoint as a LangChain tool."""
+
+    name: str = "fokals_sales_team"
+    description: str = "The sales team each of the person's companies is building, as its own job ads show it: open sales roles now by role (SDR or BDR, account executive, account manager, sales engineer, sales leadership, sales operations, partnerships), by the customer segment they sell to and by country; the median base and on-target pay the ads state, by role; the sales tools the ads name; the last twelve closed weeks; and the latest open sales postings with what each states (base, on-target pay, quota, ramp, where leads come from). Pay is what an ad offers, not what is paid. Use it to size a sales team, see where it is expanding or moving upmarket, or benchmark an offer. A company with no sales postings costs nothing and is named as such. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = SalesTeamInput
+    endpoint: str = "sales_team"
+
+
+class FundingFilingsInput(BaseModel):
+    """Arguments of funding_filings."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    companies: list[str] = Field(
+        min_length=1,
+        max_length=1000,
+        description='The person\'s own companies, each as a website address ("acme.com"), a name or an id from an earlier answer. At most 25 a call.',
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsFundingFilings(FokalsBaseTool):
+    """Funding filings: the Fokals funding_filings endpoint as a LangChain tool."""
+
+    name: str = "fokals_funding_filings"
+    description: str = "The notices of a private fundraise each of the person's companies has filed with the US securities regulator (Form D), newest first: when it was filed, the amount offered and the amount sold so far, the date of the first sale, the company's industry and place as filed, and whether it amends an earlier notice. A company that has not raised money this way has none. Use it to see how much a company raised and when, beyond what it announced. A company with no filing costs nothing and is named as such. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = FundingFilingsInput
+    endpoint: str = "funding_filings"
+
+
+class HeadcountHistoryInput(BaseModel):
+    """Arguments of headcount_history."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    companies: list[str] = Field(
+        min_length=1,
+        max_length=1000,
+        description='The person\'s own companies, each as a website address ("acme.com"), a name or an id from an earlier answer. At most 25 a call.',
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsHeadcountHistory(FokalsBaseTool):
+    """Headcount over time: the Fokals headcount_history endpoint as a LangChain tool."""
+
+    name: str = "fokals_headcount_history"
+    description: str = "How many people each of the person's companies employed over the years, oldest first, each figure with the date it is as of and whether it comes from the company's annual report or a public record. Use it to see whether a company is growing or shrinking. A company with no headcount held costs nothing and is named as such. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = HeadcountHistoryInput
+    endpoint: str = "headcount_history"
+
+
+class TrafficHistoryInput(BaseModel):
+    """Arguments of traffic_history."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    companies: list[str] = Field(
+        min_length=1,
+        max_length=1000,
+        description='The person\'s own companies, each as a website address ("acme.com"), a name or an id from an earlier answer. At most 25 a call.',
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsTrafficHistory(FokalsBaseTool):
+    """Website traffic month by month: the Fokals traffic_history endpoint as a LangChain tool."""
+
+    name: str = "fokals_traffic_history"
+    description: str = "How popular each of the person's companies' websites has been, month by month for up to 13 months: each month, the smallest group of the most visited websites in the world it was in (top 1,000, 5,000, 10,000, 50,000, 100,000, 500,000, 1 million, 5 million, 10 million or 50 million), with the latest month and the trend. A smaller group is more traffic. Use it to see whether a company's audience is growing. A company whose website is not ranked costs nothing and is named as such. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = TrafficHistoryInput
+    endpoint: str = "traffic_history"
+
+
+class SignalFeedInput(BaseModel):
+    """Arguments of signal_feed."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    since: Optional[str] = Field(
+        default=None,
+        pattern="^\\d{4}-\\d{2}-\\d{2}$",
+        description="From this day on, YYYY-MM-DD. 7 days ago unless given; at most 90 days back.",
+    )
+    topic: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=80,
+        description='Only signals of this buying topic, by name or id: "Marketing automation".',
+    )
+    source: Optional[Literal["site", "dns", "careers", "filing", "news"]] = Field(
+        default=None,
+        description="Only signals of this kind: site (the website), dns (the domain records), careers (job ads), filing (regulatory filings), news (announcements).",
+    )
+    limit: Optional[int] = Field(
+        default=None, ge=1, le=100, description="How many signals to return. 50 unless given, 100 at most."
+    )
+    cursor: Optional[str] = Field(
+        default=None, max_length=500, description="next_cursor of the answer before, to carry on where it ended."
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsSignalFeed(FokalsBaseTool):
+    """Buying signals across companies: the Fokals signal_feed endpoint as a LangChain tool."""
+
+    name: str = "fokals_signal_feed"
+    description: str = "Every buying signal seen across all companies from a day on, oldest first, a page at a time: the day, the company, where it was seen (its website, domain records, job ads, filings or announcements), what kind of signal it is and the buying topics it points to. Narrow it to one buying topic or one kind of source. Use it to watch a topic for new interest as it appears, or to build a list from fresh signals. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = SignalFeedInput
+    endpoint: str = "signal_feed"
+
+
+class AnnouncementFeedInput(BaseModel):
+    """Arguments of announcement_feed."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    since: Optional[str] = Field(
+        default=None,
+        pattern="^\\d{4}-\\d{2}-\\d{2}$",
+        description="From this day on, YYYY-MM-DD. 7 days ago unless given; at most 90 days back.",
+    )
+    type: Optional[
+        Literal[
+            "product_launch",
+            "partnership",
+            "acquisition_made",
+            "acquired_or_merged",
+            "funding_round",
+            "leadership_change",
+            "layoffs_restructuring",
+            "expansion",
+            "incident",
+            "financial_results",
+            "award_or_recognition",
+            "regulatory_or_legal",
+        ]
+    ] = Field(
+        default=None,
+        description="Only announcements of this type. fokals_list_filters with kind announcement_types has them all.",
+    )
+    limit: Optional[int] = Field(
+        default=None, ge=1, le=100, description="How many announcements to return. 50 unless given, 100 at most."
+    )
+    cursor: Optional[str] = Field(
+        default=None, max_length=500, description="next_cursor of the answer before, to carry on where it ended."
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsAnnouncementFeed(FokalsBaseTool):
+    """Announcements across companies: the Fokals announcement_feed endpoint as a LangChain tool."""
+
+    name: str = "fokals_announcement_feed"
+    description: str = "Every announcement companies made about themselves from a day on, newest first, a page at a time: the day, the company, the title, its types (funding, a launch, a partnership, an acquisition, a leadership change, an expansion and more), what a funding announcement states of the round, the leadership roles named, and a link. Narrow it to one type. Use it to catch every funding round or leadership change in a week. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = AnnouncementFeedInput
+    endpoint: str = "announcement_feed"
+
+
+class ChangeFeedInput(BaseModel):
+    """Arguments of change_feed."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    since: Optional[str] = Field(
+        default=None,
+        pattern="^\\d{4}-\\d{2}-\\d{2}$",
+        description="From this day on, YYYY-MM-DD. 7 days ago unless given; at most 90 days back.",
+    )
+    category: Optional[
+        Literal[
+            "technology",
+            "technology_id",
+            "market",
+            "language",
+            "currency",
+            "social",
+            "app",
+            "page",
+            "promo",
+            "dns",
+            "platform",
+            "pricing",
+            "label",
+            "identity",
+        ]
+    ] = Field(
+        default=None,
+        description="Only changes of this kind: technology (a tool added or dropped), market, language, currency, social, app, page, promo, dns, platform, pricing (a price or plan changed), label (how the company describes itself), identity.",
+    )
+    limit: Optional[int] = Field(
+        default=None, ge=1, le=100, description="How many changes to return. 50 unless given, 100 at most."
+    )
+    cursor: Optional[str] = Field(
+        default=None, max_length=500, description="next_cursor of the answer before, to carry on where it ended."
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsChangeFeed(FokalsBaseTool):
+    """Website changes across companies: the Fokals change_feed endpoint as a LangChain tool."""
+
+    name: str = "fokals_change_feed"
+    description: str = "Every change seen on company websites from a day on, oldest first, a page at a time, each in plain words: a technology added or dropped, a new market, language, currency, page or app, a price raised or cut, a plan or free plan added or dropped, a change in how the company describes itself. Narrow it to one kind of change. Use it to catch every company that adopted or dropped a tool, or changed its prices, this week. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = ChangeFeedInput
+    endpoint: str = "change_feed"
+
+
+class ListedSecuritiesInput(BaseModel):
+    """Arguments of listed_securities."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    exchange: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=10,
+        description='Only listings on this exchange, by its code: "US", "LN", or a market code such as "XNAS".',
+    )
+    country: Optional[str] = Field(
+        default=None,
+        pattern="^[A-Za-z]{2}$",
+        description="Only listings of issuers from this country, as a two-letter code.",
+    )
+    status: Optional[Literal["active", "delisted"]] = Field(
+        default=None, description="active or delisted. Both unless given."
+    )
+    limit: Optional[int] = Field(
+        default=None, ge=1, le=100, description="How many listings to return. 50 unless given, 100 at most."
+    )
+    cursor: Optional[str] = Field(
+        default=None, max_length=500, description="next_cursor of the answer before, to carry on where it ended."
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsListedSecurities(FokalsBaseTool):
+    """Stock listings: the Fokals listed_securities endpoint as a LangChain tool."""
+
+    name: str = "fokals_listed_securities"
+    description: str = "The equity listings held, a page at a time: each with its name, ticker, exchange and market code, its global identifiers (FIGI and share class FIGI, ISIN, LEI), the issuer's country, the type of security, whether it is active or delisted, and the company it belongs to where one is held. Narrow it by exchange, country or status. Use it to map a portfolio or an index to companies. Listings that match no company cost nothing. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = ListedSecuritiesInput
+    endpoint: str = "listed_securities"
+
+
+class MarketTrendsInput(BaseModel):
+    """Arguments of market_trends."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    measure: Literal[
+        "hiring_new",
+        "hiring_closed",
+        "hiring_open",
+        "hiring_net",
+        "pay_median",
+        "seniority_share",
+        "work_mode_share",
+        "function_share",
+        "ai_role_share",
+        "sales_share",
+        "sales_segment_share",
+        "sales_lead_source_share",
+        "sales_ote_median",
+        "sales_base_median",
+        "tech_added",
+        "tech_removed",
+        "tech_prevalence",
+        "gtm_page_added",
+        "market_added",
+        "language_added",
+        "replatformed",
+        "news_event",
+        "intent_surge",
+        "traffic_up",
+        "traffic_down",
+        "headcount_change_median",
+        "listings_new",
+        "listings_delisted",
+    ] = Field(
+        description="What is measured. fokals_list_filters with kind market_measures lists them with what each counts."
+    )
+    subject: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=80,
+        description='For a measure with subjects, which one: a technology ("HubSpot"), a seniority, a work mode, a job function, a type of announcement, a buying topic, a customer segment, a lead source or a page, by name. Every subject unless given.',
+    )
+    by: Optional[Literal["all", "industry", "sector", "country", "size", "market"]] = Field(
+        default=None,
+        description="How the market is cut: all (the whole index, unless given), industry, sector, country, size (by employees) or market (a stock exchange, listed companies only).",
+    )
+    value: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=60,
+        description="With by, one value of it: an industry id, a sector, a two-letter country code, a size band (1-10, 11-50, 51-200, 201-1000, 1001-5000, 5000+) or an exchange code. Every value unless given.",
+    )
+    window: Optional[int] = Field(
+        default=None,
+        ge=7,
+        le=365,
+        description="The window each figure is counted over, in days: 7, 30, 180 or 365. 30 unless given.",
+    )
+    since: Optional[str] = Field(
+        default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$", description="Only figures as of this day or later, YYYY-MM-DD."
+    )
+    until: Optional[str] = Field(
+        default=None,
+        pattern="^\\d{4}-\\d{2}-\\d{2}$",
+        description="Only figures as of this day or earlier, YYYY-MM-DD.",
+    )
+    limit: Optional[int] = Field(
+        default=None, ge=1, le=200, description="How many figures to return. 50 unless given, 200 at most."
+    )
+    cursor: Optional[str] = Field(
+        default=None, max_length=500, description="next_cursor of the answer before, to carry on where it ended."
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsMarketTrends(FokalsBaseTool):
+    """Market trends over time: the Fokals market_trends endpoint as a LangChain tool."""
+
+    name: str = "fokals_market_trends"
+    description: str = "How a measure of the market has moved over time, newest first: hiring (new, closed and open roles, pay, seniority, work mode, functions, AI roles), sales hiring and pay, technologies taken up, dropped and in use, pages, markets and languages added, website moves, announcements, buying topics surging, traffic, headcount and stock listings. Each figure is a count, the number of companies it is out of, the rate, the rate the window before, the growth between them, and an index. Cut it by industry, sector, country, company size or exchange, and follow one subject such as a technology. Use it to see what is growing in a market and where. It returns figures, not companies. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = MarketTrendsInput
+    endpoint: str = "market_trends"
+
+
+class MarketMoversInput(BaseModel):
+    """Arguments of market_movers."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    measure: Optional[
+        Literal[
+            "hiring_new",
+            "hiring_closed",
+            "hiring_open",
+            "hiring_net",
+            "pay_median",
+            "seniority_share",
+            "work_mode_share",
+            "function_share",
+            "ai_role_share",
+            "sales_share",
+            "sales_segment_share",
+            "sales_lead_source_share",
+            "sales_ote_median",
+            "sales_base_median",
+            "tech_added",
+            "tech_removed",
+            "tech_prevalence",
+            "gtm_page_added",
+            "market_added",
+            "language_added",
+            "replatformed",
+            "news_event",
+            "intent_surge",
+            "traffic_up",
+            "traffic_down",
+            "headcount_change_median",
+            "listings_new",
+            "listings_delisted",
+        ]
+    ] = Field(default=None, description="Only this measure. Every measure unless given.")
+    by: Optional[Literal["all", "industry", "sector", "country", "size", "market"]] = Field(
+        default=None,
+        description="How the market is cut: industry (unless given), sector, country, size, market or all.",
+    )
+    window: Optional[int] = Field(
+        default=None,
+        ge=7,
+        le=365,
+        description="The window each figure is counted over, in days: 7, 30, 180 or 365. 30 unless given.",
+    )
+    as_of: Optional[str] = Field(
+        default=None,
+        pattern="^\\d{4}-\\d{2}-\\d{2}$",
+        description="The day of the figures, YYYY-MM-DD. The latest unless given.",
+    )
+    limit: Optional[int] = Field(
+        default=None, ge=1, le=100, description="How many figures to return. 25 unless given, 100 at most."
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsMarketMovers(FokalsBaseTool):
+    """Biggest market movers: the Fokals market_movers endpoint as a LangChain tool."""
+
+    name: str = "fokals_market_movers"
+    description: str = "The market figures that moved most on one day, largest growth first, up or down: which industries, countries, company sizes or exchanges saw the biggest change in hiring, technologies taken up or dropped, buying topics surging, traffic and the rest. Keep to one measure or see every one. Use it to spot what is changing fastest in the market right now. It returns figures, not companies. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = MarketMoversInput
+    endpoint: str = "market_movers"
+
+
+class SalesPayBenchmarksInput(BaseModel):
+    """Arguments of sales_pay_benchmarks."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    role: Optional[
+        Literal[
+            "sdr_bdr",
+            "account_executive",
+            "account_manager",
+            "sales_engineer",
+            "sales_leadership",
+            "sales_operations",
+            "partnerships_channel",
+        ]
+    ] = Field(
+        default=None,
+        description="Only this sales role. fokals_list_filters with kind sales_roles has them all. Every role unless given.",
+    )
+    country: Optional[str] = Field(
+        default=None,
+        pattern="^([A-Za-z]{2}|ALL|all)$",
+        description="Only this country, as a two-letter code, or ALL for every country together. Every country unless given.",
+    )
+    week: Optional[str] = Field(
+        default=None,
+        pattern="^\\d{4}-\\d{2}-\\d{2}$",
+        description="The week, by its Monday as YYYY-MM-DD. The latest closed week unless given.",
+    )
+    limit: Optional[int] = Field(
+        default=None, ge=1, le=200, description="How many rows to return. 50 unless given, 200 at most."
+    )
+    max_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=100000,
+        description="The most the person has agreed to pay for this call, in US dollars. Leave it out unless a call has returned its price and the person agreed to it.",
+    )
+
+
+class FokalsSalesPayBenchmarks(FokalsBaseTool):
+    """Sales pay benchmarks: the Fokals sales_pay_benchmarks endpoint as a LangChain tool."""
+
+    name: str = "fokals_sales_pay_benchmarks"
+    description: str = "Advertised sales pay across every company's open sales job ads for one closed week, by role and country: the 25th percentile, median and 75th percentile of the stated base and of the stated on-target pay, in yearly US dollars, with how many ads each is over. Pay is what the ads offer, not what is paid. Use it to benchmark an offer or a sales budget. It returns figures, not companies. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    args_schema: type[BaseModel] = SalesPayBenchmarksInput
+    endpoint: str = "sales_pay_benchmarks"
+
+
 class ListFiltersInput(BaseModel):
     """Arguments of list_filters."""
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
     kind: Literal[
-        "technologies", "buying_topics", "industries", "business_models", "countries", "announcement_types"
+        "technologies",
+        "buying_topics",
+        "industries",
+        "business_models",
+        "countries",
+        "announcement_types",
+        "market_measures",
+        "sales_roles",
     ] = Field(description="Which list to return.")
     search: Optional[str] = Field(
         default=None,
@@ -899,7 +1452,7 @@ class FokalsListFilters(FokalsBaseTool):
     """List filter values: the Fokals list_filters endpoint as a LangChain tool."""
 
     name: str = "fokals_list_filters"
-    description: str = "Lists the values fokals_find_companies and fokals_count_companies filter by, with the number of companies under each where it is known: technologies (search by name), buying topics, industries, business models, countries (by the head office's country where it is known, otherwise the main market the company's website serves), and the types of announcement. Free."
+    description: str = "Lists the values fokals_find_companies and fokals_count_companies filter by, with the number of companies under each where it is known: technologies (search by name), buying topics, industries, business models, countries (by the head office's country where it is known, otherwise the main market the company's website serves), and the types of announcement. Also what fokals_market_trends and fokals_market_movers can measure, with how each can be cut and its subjects, and the sales roles. Free."
     args_schema: type[BaseModel] = ListFiltersInput
     endpoint: str = "list_filters"
 
@@ -934,6 +1487,18 @@ ALL_TOOLS: tuple[type[FokalsBaseTool], ...] = (
     FokalsCompaniesLikeCustomers,
     FokalsCompanyHealth,
     FokalsLikelyNext,
+    FokalsIntentHistory,
+    FokalsSalesTeam,
+    FokalsFundingFilings,
+    FokalsHeadcountHistory,
+    FokalsTrafficHistory,
+    FokalsSignalFeed,
+    FokalsAnnouncementFeed,
+    FokalsChangeFeed,
+    FokalsListedSecurities,
+    FokalsMarketTrends,
+    FokalsMarketMovers,
+    FokalsSalesPayBenchmarks,
     FokalsListFilters,
     FokalsAccountBalance,
 )
@@ -962,6 +1527,24 @@ EXAMPLES: dict[str, dict] = {
     },
     "fokals_company_health": {"companies": ["stripe.com", "shopify.com"], "weeks": 13},
     "fokals_likely_next": {"technology": "Klaviyo", "country": "US", "limit": 25},
+    "fokals_intent_history": {"companies": ["stripe.com", "shopify.com"], "weeks": 8},
+    "fokals_sales_team": {"companies": ["hubspot.com"]},
+    "fokals_funding_filings": {"companies": ["stripe.com"]},
+    "fokals_headcount_history": {"companies": ["shopify.com"]},
+    "fokals_traffic_history": {"companies": ["stripe.com", "shopify.com"]},
+    "fokals_signal_feed": {"since": "2026-10-20", "topic": "Marketing automation", "limit": 50},
+    "fokals_announcement_feed": {"since": "2026-10-20", "type": "funding_round", "limit": 50},
+    "fokals_change_feed": {"since": "2026-10-20", "category": "pricing", "limit": 50},
+    "fokals_listed_securities": {"exchange": "US", "status": "active", "limit": 50},
+    "fokals_market_trends": {
+        "measure": "tech_added",
+        "subject": "HubSpot",
+        "by": "industry",
+        "window": 30,
+        "limit": 20,
+    },
+    "fokals_market_movers": {"measure": "hiring_new", "by": "country", "window": 30, "limit": 10},
+    "fokals_sales_pay_benchmarks": {"role": "account_executive", "country": "US"},
     "fokals_list_filters": {"kind": "buying_topics", "search": "marketing", "limit": 20},
     "fokals_account_balance": {},
 }

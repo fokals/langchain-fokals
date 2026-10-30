@@ -72,7 +72,19 @@ Each tool returns the API's own sentence about what it did, followed by the data
 | `fokals_companies_like_customers` | Companies that look today the way your customers looked when they bought | Paid |
 | `fokals_company_health` | A company's health this week, with the reasons | Paid |
 | `fokals_likely_next` | The technologies a company is likeliest to add next | Paid |
-| `fokals_list_filters` | The values the search tools filter by: technologies, buying topics, industries, countries | Free |
+| `fokals_intent_history` | The buying topics a company shows signs of, week by week, with the signals behind them | Paid |
+| `fokals_sales_team` | The sales team a company's job ads show, by role, segment and country, with the pay they state | Paid |
+| `fokals_funding_filings` | A company's notices of a private fundraise (Form D), with the amounts | Paid |
+| `fokals_headcount_history` | How many people a company employed over the years | Paid |
+| `fokals_traffic_history` | How popular a company's website has been, month by month | Paid |
+| `fokals_signal_feed` | Every buying signal across all companies from a day on | Paid |
+| `fokals_announcement_feed` | Every announcement across all companies from a day on | Paid |
+| `fokals_change_feed` | Every website change across all companies from a day on | Paid |
+| `fokals_listed_securities` | Stock listings with their identifiers and the company each belongs to | Paid |
+| `fokals_market_trends` | How a measure of the market has moved over time, by industry, country, size or exchange | Paid |
+| `fokals_market_movers` | The market figures that moved most on one day | Paid |
+| `fokals_sales_pay_benchmarks` | Advertised sales pay by role and country | Paid |
+| `fokals_list_filters` | The values the search tools filter by, the market measures and the sales roles | Free |
 | `fokals_account_balance` | The balance, what this month has spent, and the prices | Free |
 
 ## Prices
