@@ -28,7 +28,12 @@ class FindCompaniesInput(BaseModel):
         max_length=80,
         description='A buying topic the company shows signs of, by name or id: "Marketing automation". fokals_list_filters with kind buying_topics has them all.',
     )
-    hiring: Optional[bool] = Field(default=None, description="true keeps only companies with open roles now.")
+    hiring: Optional[bool] = Field(
+        default=None, description="true keeps only companies hiring now: a new role first seen in the last 30 days."
+    )
+    not_hiring: Optional[bool] = Field(
+        default=None, description="true keeps only companies not hiring now: no new role in the last 30 days."
+    )
     industry: Optional[str] = Field(
         default=None,
         min_length=1,
@@ -45,6 +50,9 @@ class FindCompaniesInput(BaseModel):
     )
     listed: Optional[bool] = Field(
         default=None, description="true keeps only companies with a stock exchange listing, their own or a parent's."
+    )
+    not_listed: Optional[bool] = Field(
+        default=None, description="true keeps only private companies: no listing of their own or a parent's."
     )
     changed_since: Optional[str] = Field(
         default=None,
@@ -129,6 +137,182 @@ class FindCompaniesInput(BaseModel):
         default=None,
         description="A shift in positioning the company shows in the latest week: upmarket, downmarket, ai_pivot (turning to AI), new_buyer (selling to a new buyer), price_up or price_down.",
     )
+    sales_motion: Optional[Literal["self_serve", "sales_led", "both", "offline"]] = Field(
+        default=None,
+        description="How the company sells, from its website. One of: self_serve (Self-serve: buy or sign up online), sales_led (Sales-led: talk to sales), both (Both self-serve and sales-led), offline (Offline: in person or by phone).",
+    )
+    customer_size: Optional[Literal["consumers", "smb", "mid_market", "enterprise", "mixed"]] = Field(
+        default=None,
+        description="Who the company sells to, by size, from its website. One of: consumers (Consumers), smb (Small businesses), mid_market (Mid-market companies), enterprise (Enterprises), mixed (A mix of customers).",
+    )
+    growth_stage: Optional[Literal["startup", "scaleup", "established", "incumbent"]] = Field(
+        default=None,
+        description="How far along the company is, from its website. One of: startup (Startup), scaleup (Scale-up), established (Established), incumbent (Incumbent).",
+    )
+    price_tier: Optional[Literal["budget", "mid_market", "premium", "luxury"]] = Field(
+        default=None,
+        description="Where the company's prices sit against its market, from its website. One of: budget (Budget), mid_market (Mid-priced), premium (Premium), luxury (Luxury).",
+    )
+    pricing_model: Optional[Literal["subscription", "usage_based", "one_time", "quote_only", "freemium", "free"]] = (
+        Field(
+            default=None,
+            description="How the company charges, from its website. One of: subscription (Subscription), usage_based (Usage-based), one_time (One-time purchase), quote_only (Price on request), freemium (Freemium), free (Free).",
+        )
+    )
+    website_shows: Optional[
+        Literal[
+            "sells_online",
+            "physical_locations",
+            "international",
+            "sustainability",
+            "subscription",
+            "ai_product",
+            "enterprise_focus",
+        ]
+    ] = Field(
+        default=None,
+        description="Something the company's website shows. One of: sells_online (Sells online), physical_locations (Has physical locations), international (Operates internationally), sustainability (Talks about sustainability), subscription (Offers a subscription), ai_product (Sells an AI product), enterprise_focus (Focused on enterprises).",
+    )
+    headcount: Optional[Literal["1_10", "11_50", "51_200", "201_1000", "1001_5000", "5001_plus"]] = Field(
+        default=None,
+        description="The company's stated head count, as a band. One of: 1_10 (1 to 10 people), 11_50 (11 to 50 people), 51_200 (51 to 200 people), 201_1000 (201 to 1,000 people), 1001_5000 (1,001 to 5,000 people), 5001_plus (More than 5,000 people). Known for a small share of companies, mostly listed ones.",
+    )
+    founded: Optional[Literal["before_1950", "1950_1999", "2000_2009", "2010_2019", "2020_on"]] = Field(
+        default=None,
+        description="When the company was founded. One of: before_1950 (Before 1950), 1950_1999 (1950 to 1999), 2000_2009 (2000 to 2009), 2010_2019 (2010 to 2019), 2020_on (2020 or later). Known for a small share of companies.",
+    )
+    likely_next: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=80,
+        description='A technology the company is predicted to adopt next in the latest week, by name ("HubSpot"); "any" for any technology, "none" for no prediction. fokals_list_filters with kind fokals_likely_next has the technologies predicted.',
+    )
+    technology_change: Optional[Literal["added30", "added90", "dropped30", "dropped90"]] = Field(
+        default=None,
+        description='With technology: the company added it to its website, or dropped it, in the window. One of: added30 (Added in the last 30 days), added90 (Added in the last 90 days), dropped30 (Dropped in the last 30 days), dropped90 (Dropped in the last 90 days). With a "dropped" value the company no longer runs it.',
+    )
+    announced_within_days: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=365,
+        description="With announcement: made in the last this many days. Give this or announced_since, not both.",
+    )
+    raised_capital: Optional[Literal["6m", "12m"]] = Field(
+        default=None,
+        description="The company filed a private capital raise with the regulator in the window. One of: 6m (In the last 6 months), 12m (In the last 12 months).",
+    )
+    pricing_page_changed: Optional[bool] = Field(
+        default=None,
+        description="true keeps only companies whose pricing page changed in the last 90 days: plans, prices or how they are charged. price_change asks for one kind of change.",
+    )
+    changed_within_days: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=365,
+        description="Keeps only companies whose website changed in the last this many days. Give this or changed_since, not both.",
+    )
+    website_traffic: Optional[Literal["10000", "100000", "1000000", "10000000"]] = Field(
+        default=None,
+        description="The company's website is among the most visited websites in the world in the latest month held, as a string. One of: 10000 (Top 10,000 websites), 100000 (Top 100,000 websites), 1000000 (Top 1 million websites), 10000000 (Top 10 million websites).",
+    )
+    hiring_for: Optional[
+        Literal[
+            "software_engineering",
+            "hardware_engineering",
+            "data_analytics",
+            "data_science_ml",
+            "product_management",
+            "design",
+            "marketing_brand",
+            "marketing_performance",
+            "marketing_content_social",
+            "sales",
+            "sales_development",
+            "customer_success_support",
+            "operations",
+            "supply_chain_logistics",
+            "manufacturing_production",
+            "finance_accounting",
+            "legal_compliance",
+            "people_hr",
+            "it_security",
+            "research_science",
+            "healthcare_clinical",
+            "retail_store",
+            "hospitality_food",
+            "education_training",
+            "executive_leadership",
+        ]
+    ] = Field(
+        default=None,
+        description="At least one open role of this kind of work today. One of: software_engineering (Software engineering), hardware_engineering (Hardware engineering), data_analytics (Data and analytics), data_science_ml (Data science and AI), product_management (Product management), design (Design), marketing_brand (Brand marketing), marketing_performance (Performance marketing), marketing_content_social (Content and social), sales (Sales), sales_development (Sales development), customer_success_support (Customer success and support), operations (Operations), supply_chain_logistics (Supply chain and logistics), manufacturing_production (Production), finance_accounting (Finance and accounting), legal_compliance (Legal and compliance), people_hr (People and HR), it_security (IT and security), research_science (Research and science), healthcare_clinical (Clinical care), retail_store (Retail stores), hospitality_food (Hospitality and food), education_training (Education and training), executive_leadership (Leadership).",
+    )
+    hiring_level: Optional[
+        Literal["intern", "entry", "mid", "senior", "lead_principal", "manager", "director", "vp", "c_level"]
+    ] = Field(
+        default=None,
+        description="At least one open role at this level today. One of: intern (Internships), entry (Entry level), mid (Mid level), senior (Senior), lead_principal (Lead and principal), manager (Managers), director (Directors), vp (Vice presidents), c_level (Chief officers).",
+    )
+    registered_with: Optional[Literal["any", "lei", "sec", "uk_register", "uk_number"]] = Field(
+        default=None,
+        description="A registry holds a record of the company. One of: any (In any registry), lei (Holds an LEI), sec (Files with the US securities regulator), uk_register (On the UK company register), uk_number (Has a UK company number). uk_number counts a UK company number whether the UK register confirmed it, the LEI record gives it or the company's own website states it.",
+    )
+    registry_status: Optional[Literal["active", "inactive", "dissolved", "insolvency"]] = Field(
+        default=None,
+        description="The company's status as its registry gives it. One of: active (Active), inactive (Inactive), dissolved (Dissolved), insolvency (In liquidation or administration). Companies no registry holds are left out.",
+    )
+    incorporated: Optional[Literal["under_2y", "2_5y", "5_10y", "10_25y", "25y_plus"]] = Field(
+        default=None,
+        description="When the company was incorporated, as its registry records it. One of: under_2y (Less than 2 years ago), 2_5y (2 to 5 years ago), 5_10y (5 to 10 years ago), 10_25y (10 to 25 years ago), 25y_plus (More than 25 years ago). Known only for companies a registry holds.",
+    )
+    linked_from_min: Optional[Literal["5", "25", "100", "500"]] = Field(
+        default=None,
+        description="The company's website is linked from the websites of at least this many other companies, as a string. One of: 5 (At least 5 company websites), 25 (At least 25 company websites), 100 (At least 100 company websites), 500 (At least 500 company websites).",
+    )
+    link_rank_min: Optional[Literal["75", "90", "99"]] = Field(
+        default=None,
+        description="The company ranks at least this high, as a string, among companies linked from at least one other company's website (the share linked from fewer, 0 to 100). One of: 75 (Top quarter), 90 (Top 10%), 99 (Top 1%).",
+    )
+    gaining_links: Optional[bool] = Field(
+        default=None,
+        description="true keeps only companies whose website more other companies' websites began to link to than stopped, over the last 90 days.",
+    )
+    group: Optional[Literal["has_parent", "has_subsidiaries", "any"]] = Field(
+        default=None,
+        description="The company's place in a group of companies, from the legal entity register's ownership records, the subsidiary lists listed companies file with their annual reports and the ownership of brands. One of: has_parent (Has a parent company), has_subsidiaries (Has subsidiaries), any (Either: a parent or subsidiaries).",
+    )
+    subsidiaries: Optional[Literal["1_9", "10_49", "50_199", "200_plus"]] = Field(
+        default=None,
+        description="How many subsidiaries the company has, as a band of the largest count held (its latest annual report's list, the legal entity register, the subsidiaries held as companies, its brands among them). One of: 1_9 (1 to 9 subsidiaries), 10_49 (10 to 49 subsidiaries), 50_199 (50 to 199 subsidiaries), 200_plus (200 or more subsidiaries).",
+    )
+    store_size: Optional[Literal["1_50", "51_250", "251_1000", "1001_10000", "10001_plus"]] = Field(
+        default=None,
+        description="The company's own online store offers this many products, as a band. One of: 1_50 (1 to 50 products), 51_250 (51 to 250 products), 251_1000 (251 to 1,000 products), 1001_10000 (1,001 to 10,000 products), 10001_plus (More than 10,000 products).",
+    )
+    store_products_added: Optional[Literal["1", "10", "100"]] = Field(
+        default=None,
+        description="Products added to the company's own online store in the last 30 days, at least, as a string. One of: 1 (At least 1 product), 10 (10 products or more), 100 (100 products or more).",
+    )
+    store_on_discount: Optional[Literal["10", "25", "50"]] = Field(
+        default=None,
+        description="The share of the products of the company's own online store on discount, at least, in percent, as a string. One of: 10 (10% or more of products), 25 (25% or more of products), 50 (50% or more of products).",
+    )
+    store_price_move: Optional[Literal["raised", "cut", "any"]] = Field(
+        default=None,
+        description="The company's own online store raised or cut its regular prices in the last 90 days, measured on the same products from one weekly read to a later one. One of: raised (Prices raised in the last 90 days), cut (Prices cut in the last 90 days), any (Prices raised or cut in the last 90 days).",
+    )
+    email_provider: Optional[Literal["google_workspace", "microsoft_365", "zoho_mail", "other", "none"]] = Field(
+        default=None,
+        description="The mail service the domain of the company's main website receives its mail through, from its public mail records. One of: google_workspace (Google Workspace), microsoft_365 (Microsoft 365), zoho_mail (Zoho Mail), other (Another mail service), none (No mail on the domain).",
+    )
+    email_security: Optional[Literal["enforced", "reject", "quarantine", "monitoring", "none", "unenforced"]] = Field(
+        default=None,
+        description="The DMARC policy the domain publishes for mail that claims to come from it and fails the checks. One of: enforced (Enforced: rejects or quarantines), reject (Rejects spoofed mail), quarantine (Quarantines spoofed mail), monitoring (Monitoring only (p=none)), none (No DMARC policy), unenforced (Not enforced: monitoring or none).",
+    )
+    domain_age: Optional[Literal["under_1", "1_5", "5_10", "10_20", "20_plus"]] = Field(
+        default=None,
+        description="How long ago the domain of the company's main website was registered, from the registry's public record. One of: under_1 (Less than a year), 1_5 (1 to 5 years), 5_10 (5 to 10 years), 10_20 (10 to 20 years), 20_plus (More than 20 years). Some registries do not state the date.",
+    )
     limit: Optional[int] = Field(
         default=None, ge=1, le=1000, description="How many companies to return. 25 unless given."
     )
@@ -147,7 +331,7 @@ class FokalsFindCompanies(FokalsBaseTool):
     """Find companies by signal: the Fokals find_companies endpoint as a LangChain tool."""
 
     name: str = "fokals_find_companies"
-    description: str = "Finds companies by what they show: a technology they run, a buying topic they show signs of, whether they are hiring, an announcement they made lately (funding, a launch, a partnership, a leadership change), a project their job ads state (a migration, a first team, a certification, an expansion, an AI build), a change on their pricing page, how ready their website is for AI agents, their health this week (a band, or a shift in positioning), their industry, business model or country, and how lately their website changed. The companies whose website changed most lately come first. Give at least one filter; fokals_count_companies says how many match, free, before this is called. At most 100 companies a call. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    description: str = "Finds companies by what they show: a technology they run, added, dropped or are likely to adopt next, a buying topic they show, whether they are hiring and for what work and level, a recent announcement, a private capital raise, a project in their job ads, a change on their pricing page, their online store, their readiness for AI agents, their health this week or a shift in positioning, how they sell, to whom and at what price, their growth stage, head count and founding year, their industry, business model, country, listing, group and registration, their email provider and security, the age of their domain, how widely their website is visited and linked, and how lately it changed. The companies whose website changed most lately come first. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
     args_schema: type[BaseModel] = FindCompaniesInput
     endpoint: str = "find_companies"
 
@@ -169,7 +353,12 @@ class CountCompaniesInput(BaseModel):
         max_length=80,
         description='A buying topic the company shows signs of, by name or id: "Marketing automation". fokals_list_filters with kind buying_topics has them all.',
     )
-    hiring: Optional[bool] = Field(default=None, description="true keeps only companies with open roles now.")
+    hiring: Optional[bool] = Field(
+        default=None, description="true keeps only companies hiring now: a new role first seen in the last 30 days."
+    )
+    not_hiring: Optional[bool] = Field(
+        default=None, description="true keeps only companies not hiring now: no new role in the last 30 days."
+    )
     industry: Optional[str] = Field(
         default=None,
         min_length=1,
@@ -186,6 +375,9 @@ class CountCompaniesInput(BaseModel):
     )
     listed: Optional[bool] = Field(
         default=None, description="true keeps only companies with a stock exchange listing, their own or a parent's."
+    )
+    not_listed: Optional[bool] = Field(
+        default=None, description="true keeps only private companies: no listing of their own or a parent's."
     )
     changed_since: Optional[str] = Field(
         default=None,
@@ -269,6 +461,182 @@ class CountCompaniesInput(BaseModel):
     shift: Optional[Literal["upmarket", "downmarket", "ai_pivot", "new_buyer", "price_up", "price_down"]] = Field(
         default=None,
         description="A shift in positioning the company shows in the latest week: upmarket, downmarket, ai_pivot (turning to AI), new_buyer (selling to a new buyer), price_up or price_down.",
+    )
+    sales_motion: Optional[Literal["self_serve", "sales_led", "both", "offline"]] = Field(
+        default=None,
+        description="How the company sells, from its website. One of: self_serve (Self-serve: buy or sign up online), sales_led (Sales-led: talk to sales), both (Both self-serve and sales-led), offline (Offline: in person or by phone).",
+    )
+    customer_size: Optional[Literal["consumers", "smb", "mid_market", "enterprise", "mixed"]] = Field(
+        default=None,
+        description="Who the company sells to, by size, from its website. One of: consumers (Consumers), smb (Small businesses), mid_market (Mid-market companies), enterprise (Enterprises), mixed (A mix of customers).",
+    )
+    growth_stage: Optional[Literal["startup", "scaleup", "established", "incumbent"]] = Field(
+        default=None,
+        description="How far along the company is, from its website. One of: startup (Startup), scaleup (Scale-up), established (Established), incumbent (Incumbent).",
+    )
+    price_tier: Optional[Literal["budget", "mid_market", "premium", "luxury"]] = Field(
+        default=None,
+        description="Where the company's prices sit against its market, from its website. One of: budget (Budget), mid_market (Mid-priced), premium (Premium), luxury (Luxury).",
+    )
+    pricing_model: Optional[Literal["subscription", "usage_based", "one_time", "quote_only", "freemium", "free"]] = (
+        Field(
+            default=None,
+            description="How the company charges, from its website. One of: subscription (Subscription), usage_based (Usage-based), one_time (One-time purchase), quote_only (Price on request), freemium (Freemium), free (Free).",
+        )
+    )
+    website_shows: Optional[
+        Literal[
+            "sells_online",
+            "physical_locations",
+            "international",
+            "sustainability",
+            "subscription",
+            "ai_product",
+            "enterprise_focus",
+        ]
+    ] = Field(
+        default=None,
+        description="Something the company's website shows. One of: sells_online (Sells online), physical_locations (Has physical locations), international (Operates internationally), sustainability (Talks about sustainability), subscription (Offers a subscription), ai_product (Sells an AI product), enterprise_focus (Focused on enterprises).",
+    )
+    headcount: Optional[Literal["1_10", "11_50", "51_200", "201_1000", "1001_5000", "5001_plus"]] = Field(
+        default=None,
+        description="The company's stated head count, as a band. One of: 1_10 (1 to 10 people), 11_50 (11 to 50 people), 51_200 (51 to 200 people), 201_1000 (201 to 1,000 people), 1001_5000 (1,001 to 5,000 people), 5001_plus (More than 5,000 people). Known for a small share of companies, mostly listed ones.",
+    )
+    founded: Optional[Literal["before_1950", "1950_1999", "2000_2009", "2010_2019", "2020_on"]] = Field(
+        default=None,
+        description="When the company was founded. One of: before_1950 (Before 1950), 1950_1999 (1950 to 1999), 2000_2009 (2000 to 2009), 2010_2019 (2010 to 2019), 2020_on (2020 or later). Known for a small share of companies.",
+    )
+    likely_next: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=80,
+        description='A technology the company is predicted to adopt next in the latest week, by name ("HubSpot"); "any" for any technology, "none" for no prediction. fokals_list_filters with kind fokals_likely_next has the technologies predicted.',
+    )
+    technology_change: Optional[Literal["added30", "added90", "dropped30", "dropped90"]] = Field(
+        default=None,
+        description='With technology: the company added it to its website, or dropped it, in the window. One of: added30 (Added in the last 30 days), added90 (Added in the last 90 days), dropped30 (Dropped in the last 30 days), dropped90 (Dropped in the last 90 days). With a "dropped" value the company no longer runs it.',
+    )
+    announced_within_days: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=365,
+        description="With announcement: made in the last this many days. Give this or announced_since, not both.",
+    )
+    raised_capital: Optional[Literal["6m", "12m"]] = Field(
+        default=None,
+        description="The company filed a private capital raise with the regulator in the window. One of: 6m (In the last 6 months), 12m (In the last 12 months).",
+    )
+    pricing_page_changed: Optional[bool] = Field(
+        default=None,
+        description="true keeps only companies whose pricing page changed in the last 90 days: plans, prices or how they are charged. price_change asks for one kind of change.",
+    )
+    changed_within_days: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=365,
+        description="Keeps only companies whose website changed in the last this many days. Give this or changed_since, not both.",
+    )
+    website_traffic: Optional[Literal["10000", "100000", "1000000", "10000000"]] = Field(
+        default=None,
+        description="The company's website is among the most visited websites in the world in the latest month held, as a string. One of: 10000 (Top 10,000 websites), 100000 (Top 100,000 websites), 1000000 (Top 1 million websites), 10000000 (Top 10 million websites).",
+    )
+    hiring_for: Optional[
+        Literal[
+            "software_engineering",
+            "hardware_engineering",
+            "data_analytics",
+            "data_science_ml",
+            "product_management",
+            "design",
+            "marketing_brand",
+            "marketing_performance",
+            "marketing_content_social",
+            "sales",
+            "sales_development",
+            "customer_success_support",
+            "operations",
+            "supply_chain_logistics",
+            "manufacturing_production",
+            "finance_accounting",
+            "legal_compliance",
+            "people_hr",
+            "it_security",
+            "research_science",
+            "healthcare_clinical",
+            "retail_store",
+            "hospitality_food",
+            "education_training",
+            "executive_leadership",
+        ]
+    ] = Field(
+        default=None,
+        description="At least one open role of this kind of work today. One of: software_engineering (Software engineering), hardware_engineering (Hardware engineering), data_analytics (Data and analytics), data_science_ml (Data science and AI), product_management (Product management), design (Design), marketing_brand (Brand marketing), marketing_performance (Performance marketing), marketing_content_social (Content and social), sales (Sales), sales_development (Sales development), customer_success_support (Customer success and support), operations (Operations), supply_chain_logistics (Supply chain and logistics), manufacturing_production (Production), finance_accounting (Finance and accounting), legal_compliance (Legal and compliance), people_hr (People and HR), it_security (IT and security), research_science (Research and science), healthcare_clinical (Clinical care), retail_store (Retail stores), hospitality_food (Hospitality and food), education_training (Education and training), executive_leadership (Leadership).",
+    )
+    hiring_level: Optional[
+        Literal["intern", "entry", "mid", "senior", "lead_principal", "manager", "director", "vp", "c_level"]
+    ] = Field(
+        default=None,
+        description="At least one open role at this level today. One of: intern (Internships), entry (Entry level), mid (Mid level), senior (Senior), lead_principal (Lead and principal), manager (Managers), director (Directors), vp (Vice presidents), c_level (Chief officers).",
+    )
+    registered_with: Optional[Literal["any", "lei", "sec", "uk_register", "uk_number"]] = Field(
+        default=None,
+        description="A registry holds a record of the company. One of: any (In any registry), lei (Holds an LEI), sec (Files with the US securities regulator), uk_register (On the UK company register), uk_number (Has a UK company number). uk_number counts a UK company number whether the UK register confirmed it, the LEI record gives it or the company's own website states it.",
+    )
+    registry_status: Optional[Literal["active", "inactive", "dissolved", "insolvency"]] = Field(
+        default=None,
+        description="The company's status as its registry gives it. One of: active (Active), inactive (Inactive), dissolved (Dissolved), insolvency (In liquidation or administration). Companies no registry holds are left out.",
+    )
+    incorporated: Optional[Literal["under_2y", "2_5y", "5_10y", "10_25y", "25y_plus"]] = Field(
+        default=None,
+        description="When the company was incorporated, as its registry records it. One of: under_2y (Less than 2 years ago), 2_5y (2 to 5 years ago), 5_10y (5 to 10 years ago), 10_25y (10 to 25 years ago), 25y_plus (More than 25 years ago). Known only for companies a registry holds.",
+    )
+    linked_from_min: Optional[Literal["5", "25", "100", "500"]] = Field(
+        default=None,
+        description="The company's website is linked from the websites of at least this many other companies, as a string. One of: 5 (At least 5 company websites), 25 (At least 25 company websites), 100 (At least 100 company websites), 500 (At least 500 company websites).",
+    )
+    link_rank_min: Optional[Literal["75", "90", "99"]] = Field(
+        default=None,
+        description="The company ranks at least this high, as a string, among companies linked from at least one other company's website (the share linked from fewer, 0 to 100). One of: 75 (Top quarter), 90 (Top 10%), 99 (Top 1%).",
+    )
+    gaining_links: Optional[bool] = Field(
+        default=None,
+        description="true keeps only companies whose website more other companies' websites began to link to than stopped, over the last 90 days.",
+    )
+    group: Optional[Literal["has_parent", "has_subsidiaries", "any"]] = Field(
+        default=None,
+        description="The company's place in a group of companies, from the legal entity register's ownership records, the subsidiary lists listed companies file with their annual reports and the ownership of brands. One of: has_parent (Has a parent company), has_subsidiaries (Has subsidiaries), any (Either: a parent or subsidiaries).",
+    )
+    subsidiaries: Optional[Literal["1_9", "10_49", "50_199", "200_plus"]] = Field(
+        default=None,
+        description="How many subsidiaries the company has, as a band of the largest count held (its latest annual report's list, the legal entity register, the subsidiaries held as companies, its brands among them). One of: 1_9 (1 to 9 subsidiaries), 10_49 (10 to 49 subsidiaries), 50_199 (50 to 199 subsidiaries), 200_plus (200 or more subsidiaries).",
+    )
+    store_size: Optional[Literal["1_50", "51_250", "251_1000", "1001_10000", "10001_plus"]] = Field(
+        default=None,
+        description="The company's own online store offers this many products, as a band. One of: 1_50 (1 to 50 products), 51_250 (51 to 250 products), 251_1000 (251 to 1,000 products), 1001_10000 (1,001 to 10,000 products), 10001_plus (More than 10,000 products).",
+    )
+    store_products_added: Optional[Literal["1", "10", "100"]] = Field(
+        default=None,
+        description="Products added to the company's own online store in the last 30 days, at least, as a string. One of: 1 (At least 1 product), 10 (10 products or more), 100 (100 products or more).",
+    )
+    store_on_discount: Optional[Literal["10", "25", "50"]] = Field(
+        default=None,
+        description="The share of the products of the company's own online store on discount, at least, in percent, as a string. One of: 10 (10% or more of products), 25 (25% or more of products), 50 (50% or more of products).",
+    )
+    store_price_move: Optional[Literal["raised", "cut", "any"]] = Field(
+        default=None,
+        description="The company's own online store raised or cut its regular prices in the last 90 days, measured on the same products from one weekly read to a later one. One of: raised (Prices raised in the last 90 days), cut (Prices cut in the last 90 days), any (Prices raised or cut in the last 90 days).",
+    )
+    email_provider: Optional[Literal["google_workspace", "microsoft_365", "zoho_mail", "other", "none"]] = Field(
+        default=None,
+        description="The mail service the domain of the company's main website receives its mail through, from its public mail records. One of: google_workspace (Google Workspace), microsoft_365 (Microsoft 365), zoho_mail (Zoho Mail), other (Another mail service), none (No mail on the domain).",
+    )
+    email_security: Optional[Literal["enforced", "reject", "quarantine", "monitoring", "none", "unenforced"]] = Field(
+        default=None,
+        description="The DMARC policy the domain publishes for mail that claims to come from it and fails the checks. One of: enforced (Enforced: rejects or quarantines), reject (Rejects spoofed mail), quarantine (Quarantines spoofed mail), monitoring (Monitoring only (p=none)), none (No DMARC policy), unenforced (Not enforced: monitoring or none).",
+    )
+    domain_age: Optional[Literal["under_1", "1_5", "5_10", "10_20", "20_plus"]] = Field(
+        default=None,
+        description="How long ago the domain of the company's main website was registered, from the registry's public record. One of: under_1 (Less than a year), 1_5 (1 to 5 years), 5_10 (5 to 10 years), 10_20 (10 to 20 years), 20_plus (More than 20 years). Some registries do not state the date.",
     )
 
 
@@ -303,7 +671,7 @@ class FokalsEnrichCompanies(FokalsBaseTool):
     """Enrich a list of companies: the Fokals enrich_companies endpoint as a LangChain tool."""
 
     name: str = "fokals_enrich_companies"
-    description: str = "Takes the person's own list of companies, by website address or name, and returns what is held on each: industry and business model, the technologies its website runs, open roles and hiring in the last 30 days, buying topics it shows signs of, its agent readiness score, the projects its job ads state, its health band this week, and when its website last changed. Use it to fill in, score or rank a list of accounts, leads or customers. A website address finds a company more surely than a name. At most 100 companies a call; send a longer list in parts. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    description: str = "Takes the person's own list of companies, by website address or name, and returns what is held on each: industry and business model, the technologies its website runs, open roles and hiring in the last 30 days, buying topics it shows signs of, its agent readiness score, the projects its job ads state, its health band this week, its registry status and the registries that hold it, how many other companies' websites link to it, its parent company and how many subsidiaries it has, its own online store's products and latest price move, and when its website last changed. Use it to fill in, score or rank a list of accounts, leads or customers. A website address finds a company more surely than a name. At most 100 companies a call; send a longer list in parts. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
     args_schema: type[BaseModel] = EnrichCompaniesInput
     endpoint: str = "enrich_companies"
 
@@ -332,12 +700,17 @@ class CompanyProfileInput(BaseModel):
                 "internal_tools",
                 "health",
                 "likely_next",
+                "registration",
+                "referring_companies",
+                "group",
+                "store",
+                "domain",
             ]
         ]
     ] = Field(
         default=None,
         min_length=1,
-        description="Which parts to return: technology, hiring, buying_topics, announcements, changes, traffic, agent_readiness, projects, internal_tools, health, fokals_likely_next. All of them unless given; ask for fewer to keep the answer short.",
+        description="Which parts to return: technology, hiring, buying_topics, announcements, changes, traffic, agent_readiness, projects, internal_tools, health, fokals_likely_next, registration, referring_companies, group, store, domain. All of them unless given; ask for fewer to keep the answer short.",
     )
     max_usd: Optional[float] = Field(
         default=None,
@@ -351,7 +724,7 @@ class FokalsCompanyProfile(FokalsBaseTool):
     """Company profile: the Fokals company_profile endpoint as a LangChain tool."""
 
     name: str = "fokals_company_profile"
-    description: str = "One company in depth: what it sells and to whom, every technology its website runs and since when, its open roles by function, seniority and country with the latest postings, the buying topics it shows signs of with the signals behind them, its latest announcements by type, the latest changes on its website, how its traffic ranks, its agent readiness score with the evidence behind it, the projects its job ads state, the back-office software they name that its website does not show, its weekly health with the reasons, and the technologies it is likeliest to add next. Use it to research an account before a call, to explain why a company is on a list, or to compare companies. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    description: str = "One company in depth: what it sells and to whom, every technology its website runs and since when, its open roles by function, seniority and country with the latest postings, the buying topics it shows signs of with the signals behind them, its latest announcements by type, the latest changes on its website, how its traffic ranks, its agent readiness score with the evidence behind it, the projects its job ads state, the back-office software they name that its website does not show, its weekly health with the reasons, the technologies it is likeliest to add next. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
     args_schema: type[BaseModel] = CompanyProfileInput
     endpoint: str = "company_profile"
 
@@ -421,7 +794,7 @@ class SearchJobPostingsInput(BaseModel):
         default=None,
         min_length=1,
         max_length=80,
-        description='A technology the posting asks for, by name: "Snowflake", "Salesforce".',
+        description='A technology the posting asks for, by name: "Salesforce", "HubSpot".',
     )
     industry: Optional[str] = Field(
         default=None,
@@ -439,6 +812,27 @@ class SearchJobPostingsInput(BaseModel):
         ge=1,
         le=10000000,
         description="Only postings that state pay of at least this much a year, in US dollars.",
+    )
+    pay_stated: Optional[bool] = Field(
+        default=None, description="true keeps only postings that state pay, in any currency."
+    )
+    project: Optional[Literal["migration", "first_team", "compliance", "expansion", "ai_build"]] = Field(
+        default=None,
+        description="Only postings that state a project of this kind: migration (a move from one system to another), first_team (the first team of a function), compliance (work towards a certification), expansion (into a new country or region, not the company's own), ai_build (building an AI product).",
+    )
+    website_traffic: Optional[Literal["10000", "100000", "1000000", "10000000"]] = Field(
+        default=None,
+        description="The company's website is among the most visited websites in the world in the latest month held, as a string. One of: 10000 (Top 10,000 websites), 100000 (Top 100,000 websites), 1000000 (Top 1 million websites), 10000000 (Top 10 million websites).",
+    )
+    listed: Optional[bool] = Field(
+        default=None, description="true keeps only companies with a stock exchange listing, their own or a parent's."
+    )
+    not_listed: Optional[bool] = Field(
+        default=None, description="true keeps only private companies: no listing of their own or a parent's."
+    )
+    health_band: Optional[Literal["distress", "watch", "growing", "breakout"]] = Field(
+        default=None,
+        description="The company's health in the latest week: distress (signs of distress), watch (worth watching), growing or breakout (breaking out).",
     )
     companies: Optional[list[str]] = Field(
         default=None,
@@ -464,7 +858,7 @@ class FokalsSearchJobPostings(FokalsBaseTool):
     """Search job postings: the Fokals search_job_postings endpoint as a LangChain tool."""
 
     name: str = "fokals_search_job_postings"
-    description: str = "Searches the open job postings of companies: by words in the title, function, seniority, country, remote or on site, a technology the posting asks for, the hiring company's industry, pay, and how lately the posting appeared. The latest postings come first, each with its company, function, seniority, pay where stated, and link. Use it to find who is hiring for a role, to spot a team being built, or to check hiring at a list of accounts. Give at least one filter. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    description: str = "Searches the open job postings of companies: by words in the title, function, seniority, country, remote or on site, a technology the posting asks for, pay, whether it states pay or a project, how lately the posting appeared, and the hiring company's industry, website traffic, listing and health. The latest postings come first, each with its company, function, seniority, pay where stated, and link. Use it to find who is hiring for a role, to spot a team being built, or to check hiring at a list of accounts. Give at least one filter. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
     args_schema: type[BaseModel] = SearchJobPostingsInput
     endpoint: str = "search_job_postings"
 
@@ -560,7 +954,12 @@ class MarketBreakdownInput(BaseModel):
         max_length=80,
         description='A buying topic the company shows signs of, by name or id: "Marketing automation". fokals_list_filters with kind buying_topics has them all.',
     )
-    hiring: Optional[bool] = Field(default=None, description="true keeps only companies with open roles now.")
+    hiring: Optional[bool] = Field(
+        default=None, description="true keeps only companies hiring now: a new role first seen in the last 30 days."
+    )
+    not_hiring: Optional[bool] = Field(
+        default=None, description="true keeps only companies not hiring now: no new role in the last 30 days."
+    )
     industry: Optional[str] = Field(
         default=None,
         min_length=1,
@@ -577,6 +976,9 @@ class MarketBreakdownInput(BaseModel):
     )
     listed: Optional[bool] = Field(
         default=None, description="true keeps only companies with a stock exchange listing, their own or a parent's."
+    )
+    not_listed: Optional[bool] = Field(
+        default=None, description="true keeps only private companies: no listing of their own or a parent's."
     )
     changed_since: Optional[str] = Field(
         default=None,
@@ -660,6 +1062,182 @@ class MarketBreakdownInput(BaseModel):
     shift: Optional[Literal["upmarket", "downmarket", "ai_pivot", "new_buyer", "price_up", "price_down"]] = Field(
         default=None,
         description="A shift in positioning the company shows in the latest week: upmarket, downmarket, ai_pivot (turning to AI), new_buyer (selling to a new buyer), price_up or price_down.",
+    )
+    sales_motion: Optional[Literal["self_serve", "sales_led", "both", "offline"]] = Field(
+        default=None,
+        description="How the company sells, from its website. One of: self_serve (Self-serve: buy or sign up online), sales_led (Sales-led: talk to sales), both (Both self-serve and sales-led), offline (Offline: in person or by phone).",
+    )
+    customer_size: Optional[Literal["consumers", "smb", "mid_market", "enterprise", "mixed"]] = Field(
+        default=None,
+        description="Who the company sells to, by size, from its website. One of: consumers (Consumers), smb (Small businesses), mid_market (Mid-market companies), enterprise (Enterprises), mixed (A mix of customers).",
+    )
+    growth_stage: Optional[Literal["startup", "scaleup", "established", "incumbent"]] = Field(
+        default=None,
+        description="How far along the company is, from its website. One of: startup (Startup), scaleup (Scale-up), established (Established), incumbent (Incumbent).",
+    )
+    price_tier: Optional[Literal["budget", "mid_market", "premium", "luxury"]] = Field(
+        default=None,
+        description="Where the company's prices sit against its market, from its website. One of: budget (Budget), mid_market (Mid-priced), premium (Premium), luxury (Luxury).",
+    )
+    pricing_model: Optional[Literal["subscription", "usage_based", "one_time", "quote_only", "freemium", "free"]] = (
+        Field(
+            default=None,
+            description="How the company charges, from its website. One of: subscription (Subscription), usage_based (Usage-based), one_time (One-time purchase), quote_only (Price on request), freemium (Freemium), free (Free).",
+        )
+    )
+    website_shows: Optional[
+        Literal[
+            "sells_online",
+            "physical_locations",
+            "international",
+            "sustainability",
+            "subscription",
+            "ai_product",
+            "enterprise_focus",
+        ]
+    ] = Field(
+        default=None,
+        description="Something the company's website shows. One of: sells_online (Sells online), physical_locations (Has physical locations), international (Operates internationally), sustainability (Talks about sustainability), subscription (Offers a subscription), ai_product (Sells an AI product), enterprise_focus (Focused on enterprises).",
+    )
+    headcount: Optional[Literal["1_10", "11_50", "51_200", "201_1000", "1001_5000", "5001_plus"]] = Field(
+        default=None,
+        description="The company's stated head count, as a band. One of: 1_10 (1 to 10 people), 11_50 (11 to 50 people), 51_200 (51 to 200 people), 201_1000 (201 to 1,000 people), 1001_5000 (1,001 to 5,000 people), 5001_plus (More than 5,000 people). Known for a small share of companies, mostly listed ones.",
+    )
+    founded: Optional[Literal["before_1950", "1950_1999", "2000_2009", "2010_2019", "2020_on"]] = Field(
+        default=None,
+        description="When the company was founded. One of: before_1950 (Before 1950), 1950_1999 (1950 to 1999), 2000_2009 (2000 to 2009), 2010_2019 (2010 to 2019), 2020_on (2020 or later). Known for a small share of companies.",
+    )
+    likely_next: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=80,
+        description='A technology the company is predicted to adopt next in the latest week, by name ("HubSpot"); "any" for any technology, "none" for no prediction. fokals_list_filters with kind fokals_likely_next has the technologies predicted.',
+    )
+    technology_change: Optional[Literal["added30", "added90", "dropped30", "dropped90"]] = Field(
+        default=None,
+        description='With technology: the company added it to its website, or dropped it, in the window. One of: added30 (Added in the last 30 days), added90 (Added in the last 90 days), dropped30 (Dropped in the last 30 days), dropped90 (Dropped in the last 90 days). With a "dropped" value the company no longer runs it.',
+    )
+    announced_within_days: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=365,
+        description="With announcement: made in the last this many days. Give this or announced_since, not both.",
+    )
+    raised_capital: Optional[Literal["6m", "12m"]] = Field(
+        default=None,
+        description="The company filed a private capital raise with the regulator in the window. One of: 6m (In the last 6 months), 12m (In the last 12 months).",
+    )
+    pricing_page_changed: Optional[bool] = Field(
+        default=None,
+        description="true keeps only companies whose pricing page changed in the last 90 days: plans, prices or how they are charged. price_change asks for one kind of change.",
+    )
+    changed_within_days: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=365,
+        description="Keeps only companies whose website changed in the last this many days. Give this or changed_since, not both.",
+    )
+    website_traffic: Optional[Literal["10000", "100000", "1000000", "10000000"]] = Field(
+        default=None,
+        description="The company's website is among the most visited websites in the world in the latest month held, as a string. One of: 10000 (Top 10,000 websites), 100000 (Top 100,000 websites), 1000000 (Top 1 million websites), 10000000 (Top 10 million websites).",
+    )
+    hiring_for: Optional[
+        Literal[
+            "software_engineering",
+            "hardware_engineering",
+            "data_analytics",
+            "data_science_ml",
+            "product_management",
+            "design",
+            "marketing_brand",
+            "marketing_performance",
+            "marketing_content_social",
+            "sales",
+            "sales_development",
+            "customer_success_support",
+            "operations",
+            "supply_chain_logistics",
+            "manufacturing_production",
+            "finance_accounting",
+            "legal_compliance",
+            "people_hr",
+            "it_security",
+            "research_science",
+            "healthcare_clinical",
+            "retail_store",
+            "hospitality_food",
+            "education_training",
+            "executive_leadership",
+        ]
+    ] = Field(
+        default=None,
+        description="At least one open role of this kind of work today. One of: software_engineering (Software engineering), hardware_engineering (Hardware engineering), data_analytics (Data and analytics), data_science_ml (Data science and AI), product_management (Product management), design (Design), marketing_brand (Brand marketing), marketing_performance (Performance marketing), marketing_content_social (Content and social), sales (Sales), sales_development (Sales development), customer_success_support (Customer success and support), operations (Operations), supply_chain_logistics (Supply chain and logistics), manufacturing_production (Production), finance_accounting (Finance and accounting), legal_compliance (Legal and compliance), people_hr (People and HR), it_security (IT and security), research_science (Research and science), healthcare_clinical (Clinical care), retail_store (Retail stores), hospitality_food (Hospitality and food), education_training (Education and training), executive_leadership (Leadership).",
+    )
+    hiring_level: Optional[
+        Literal["intern", "entry", "mid", "senior", "lead_principal", "manager", "director", "vp", "c_level"]
+    ] = Field(
+        default=None,
+        description="At least one open role at this level today. One of: intern (Internships), entry (Entry level), mid (Mid level), senior (Senior), lead_principal (Lead and principal), manager (Managers), director (Directors), vp (Vice presidents), c_level (Chief officers).",
+    )
+    registered_with: Optional[Literal["any", "lei", "sec", "uk_register", "uk_number"]] = Field(
+        default=None,
+        description="A registry holds a record of the company. One of: any (In any registry), lei (Holds an LEI), sec (Files with the US securities regulator), uk_register (On the UK company register), uk_number (Has a UK company number). uk_number counts a UK company number whether the UK register confirmed it, the LEI record gives it or the company's own website states it.",
+    )
+    registry_status: Optional[Literal["active", "inactive", "dissolved", "insolvency"]] = Field(
+        default=None,
+        description="The company's status as its registry gives it. One of: active (Active), inactive (Inactive), dissolved (Dissolved), insolvency (In liquidation or administration). Companies no registry holds are left out.",
+    )
+    incorporated: Optional[Literal["under_2y", "2_5y", "5_10y", "10_25y", "25y_plus"]] = Field(
+        default=None,
+        description="When the company was incorporated, as its registry records it. One of: under_2y (Less than 2 years ago), 2_5y (2 to 5 years ago), 5_10y (5 to 10 years ago), 10_25y (10 to 25 years ago), 25y_plus (More than 25 years ago). Known only for companies a registry holds.",
+    )
+    linked_from_min: Optional[Literal["5", "25", "100", "500"]] = Field(
+        default=None,
+        description="The company's website is linked from the websites of at least this many other companies, as a string. One of: 5 (At least 5 company websites), 25 (At least 25 company websites), 100 (At least 100 company websites), 500 (At least 500 company websites).",
+    )
+    link_rank_min: Optional[Literal["75", "90", "99"]] = Field(
+        default=None,
+        description="The company ranks at least this high, as a string, among companies linked from at least one other company's website (the share linked from fewer, 0 to 100). One of: 75 (Top quarter), 90 (Top 10%), 99 (Top 1%).",
+    )
+    gaining_links: Optional[bool] = Field(
+        default=None,
+        description="true keeps only companies whose website more other companies' websites began to link to than stopped, over the last 90 days.",
+    )
+    group: Optional[Literal["has_parent", "has_subsidiaries", "any"]] = Field(
+        default=None,
+        description="The company's place in a group of companies, from the legal entity register's ownership records, the subsidiary lists listed companies file with their annual reports and the ownership of brands. One of: has_parent (Has a parent company), has_subsidiaries (Has subsidiaries), any (Either: a parent or subsidiaries).",
+    )
+    subsidiaries: Optional[Literal["1_9", "10_49", "50_199", "200_plus"]] = Field(
+        default=None,
+        description="How many subsidiaries the company has, as a band of the largest count held (its latest annual report's list, the legal entity register, the subsidiaries held as companies, its brands among them). One of: 1_9 (1 to 9 subsidiaries), 10_49 (10 to 49 subsidiaries), 50_199 (50 to 199 subsidiaries), 200_plus (200 or more subsidiaries).",
+    )
+    store_size: Optional[Literal["1_50", "51_250", "251_1000", "1001_10000", "10001_plus"]] = Field(
+        default=None,
+        description="The company's own online store offers this many products, as a band. One of: 1_50 (1 to 50 products), 51_250 (51 to 250 products), 251_1000 (251 to 1,000 products), 1001_10000 (1,001 to 10,000 products), 10001_plus (More than 10,000 products).",
+    )
+    store_products_added: Optional[Literal["1", "10", "100"]] = Field(
+        default=None,
+        description="Products added to the company's own online store in the last 30 days, at least, as a string. One of: 1 (At least 1 product), 10 (10 products or more), 100 (100 products or more).",
+    )
+    store_on_discount: Optional[Literal["10", "25", "50"]] = Field(
+        default=None,
+        description="The share of the products of the company's own online store on discount, at least, in percent, as a string. One of: 10 (10% or more of products), 25 (25% or more of products), 50 (50% or more of products).",
+    )
+    store_price_move: Optional[Literal["raised", "cut", "any"]] = Field(
+        default=None,
+        description="The company's own online store raised or cut its regular prices in the last 90 days, measured on the same products from one weekly read to a later one. One of: raised (Prices raised in the last 90 days), cut (Prices cut in the last 90 days), any (Prices raised or cut in the last 90 days).",
+    )
+    email_provider: Optional[Literal["google_workspace", "microsoft_365", "zoho_mail", "other", "none"]] = Field(
+        default=None,
+        description="The mail service the domain of the company's main website receives its mail through, from its public mail records. One of: google_workspace (Google Workspace), microsoft_365 (Microsoft 365), zoho_mail (Zoho Mail), other (Another mail service), none (No mail on the domain).",
+    )
+    email_security: Optional[Literal["enforced", "reject", "quarantine", "monitoring", "none", "unenforced"]] = Field(
+        default=None,
+        description="The DMARC policy the domain publishes for mail that claims to come from it and fails the checks. One of: enforced (Enforced: rejects or quarantines), reject (Rejects spoofed mail), quarantine (Quarantines spoofed mail), monitoring (Monitoring only (p=none)), none (No DMARC policy), unenforced (Not enforced: monitoring or none).",
+    )
+    domain_age: Optional[Literal["under_1", "1_5", "5_10", "10_20", "20_plus"]] = Field(
+        default=None,
+        description="How long ago the domain of the company's main website was registered, from the registry's public record. One of: under_1 (Less than a year), 1_5 (1 to 5 years), 5_10 (5 to 10 years), 10_20 (10 to 20 years), 20_plus (More than 20 years). Some registries do not state the date.",
     )
     by: Literal[
         "industry",
@@ -1042,6 +1620,48 @@ class SignalFeedInput(BaseModel):
         default=None,
         description="Only signals of this kind: site (the website), dns (the domain records), careers (job ads), filing (regulatory filings), news (announcements).",
     )
+    technology: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=80,
+        description='Only signals that name this technology, by name: "HubSpot" added to or removed from a website, or named in a job ad.',
+    )
+    industry: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=60,
+        description="One of: fashion_apparel, beauty_personal_care, health_wellness, food_beverage, home_garden, consumer_electronics, software_saas, finance_insurance, education, travel_hospitality, automotive, real_estate, entertainment_media, gaming, sports_outdoors, retail_marketplace, professional_services, telecom_utilities, nonprofit_public, pets, other.",
+    )
+    business_model: Optional[str] = Field(
+        default=None, min_length=1, max_length=20, description="One of: b2b, b2c, both."
+    )
+    country: Optional[str] = Field(
+        default=None,
+        pattern="^[A-Za-z]{2}$",
+        description="A country as a two-letter code: US, GB, DE. Matches the head office's country where it is known, otherwise the main market the company's website serves: country and market_country in an answer.",
+    )
+    website_traffic: Optional[Literal["10000", "100000", "1000000", "10000000"]] = Field(
+        default=None,
+        description="The company's website is among the most visited websites in the world in the latest month held, as a string. One of: 10000 (Top 10,000 websites), 100000 (Top 100,000 websites), 1000000 (Top 1 million websites), 10000000 (Top 10 million websites).",
+    )
+    headcount: Optional[Literal["1_10", "11_50", "51_200", "201_1000", "1001_5000", "5001_plus"]] = Field(
+        default=None,
+        description="The company's stated head count, as a band. One of: 1_10 (1 to 10 people), 11_50 (11 to 50 people), 51_200 (51 to 200 people), 201_1000 (201 to 1,000 people), 1001_5000 (1,001 to 5,000 people), 5001_plus (More than 5,000 people). Known for a small share of companies, mostly listed ones.",
+    )
+    listed: Optional[bool] = Field(
+        default=None, description="true keeps only companies with a stock exchange listing, their own or a parent's."
+    )
+    not_listed: Optional[bool] = Field(
+        default=None, description="true keeps only private companies: no listing of their own or a parent's."
+    )
+    health_band: Optional[Literal["distress", "watch", "growing", "breakout"]] = Field(
+        default=None,
+        description="The company's health in the latest week: distress (signs of distress), watch (worth watching), growing or breakout (breaking out).",
+    )
+    intent_score_min: Optional[Literal["50", "70", "90"]] = Field(
+        default=None,
+        description="The least intent score, as a string, of the company's top buying topic in its latest scored week: 50, 70, 90 (of 100).",
+    )
     limit: Optional[int] = Field(
         default=None, ge=1, le=100, description="How many signals to return. 50 unless given, 100 at most."
     )
@@ -1060,7 +1680,7 @@ class FokalsSignalFeed(FokalsBaseTool):
     """Buying signals across companies: the Fokals signal_feed endpoint as a LangChain tool."""
 
     name: str = "fokals_signal_feed"
-    description: str = "Every buying signal seen across all companies from a day on, oldest first, a page at a time: the day, the company, where it was seen (its website, domain records, job ads, filings or announcements), what kind of signal it is and the buying topics it points to. Narrow it to one buying topic or one kind of source. Use it to watch a topic for new interest as it appears, or to build a list from fresh signals. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
+    description: str = "Every buying signal seen across all companies from a day on, oldest first, a page at a time: the day, the company, where it was seen (its website, domain records, job ads, filings or announcements), what kind of signal it is and the buying topics it points to. Narrow it to one buying topic, one kind of source or a technology the signal names, and by the company behind it: its industry, business model, country, website traffic, head count, listing, health and intent score. Use it to watch a topic for new interest as it appears, or to build a list from fresh signals. Paid from the Fokals balance at the prices on https://api.fokals.com/v1/prices. A call that costs more than the account lets run unasked returns its price instead: tell the person, then call again with max_usd once they agree."
     args_schema: type[BaseModel] = SignalFeedInput
     endpoint: str = "signal_feed"
 
@@ -1438,6 +2058,8 @@ class ListFiltersInput(BaseModel):
         "announcement_types",
         "market_measures",
         "sales_roles",
+        "likely_next",
+        "company_labels",
     ] = Field(description="Which list to return.")
     search: Optional[str] = Field(
         default=None,
@@ -1446,13 +2068,36 @@ class ListFiltersInput(BaseModel):
         description="Text a name holds. Needed for technologies beyond the most used: there are thousands.",
     )
     limit: Optional[int] = Field(default=None, ge=1, le=200, description="How many to return. 50 unless given.")
+    category: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=60,
+        description='With kind technologies: only technologies of this category, as each technology in the list gives it ("analytics", "crm").',
+    )
+    catalogue: Optional[Literal["ours", "open"]] = Field(
+        default=None, description="With kind technologies: ours (the Fokals catalogue) or open (the open catalogue)."
+    )
+    min_companies: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=100000000,
+        description="With kind technologies: only technologies at least this many companies run now.",
+    )
+    weekly_series: Optional[bool] = Field(
+        default=None,
+        description="With kind technologies: true for only the technologies with weekly market series (their changes count for intent), false for only those without.",
+    )
+    predicted_next: Optional[bool] = Field(
+        default=None,
+        description="With kind technologies: true for only the technologies a likely next adoption is predicted for in the latest week.",
+    )
 
 
 class FokalsListFilters(FokalsBaseTool):
     """List filter values: the Fokals list_filters endpoint as a LangChain tool."""
 
     name: str = "fokals_list_filters"
-    description: str = "Lists the values fokals_find_companies and fokals_count_companies filter by, with the number of companies under each where it is known: technologies (search by name), buying topics, industries, business models, countries (by the head office's country where it is known, otherwise the main market the company's website serves), and the types of announcement. Also what fokals_market_trends and fokals_market_movers can measure, with how each can be cut and its subjects, and the sales roles. Free."
+    description: str = "Lists the values fokals_find_companies and fokals_count_companies filter by, with the number of companies under each where it is known: technologies (search by name, or narrow them as the Technologies page does: by category, catalogue, least companies, weekly series and predicted next adoption), buying topics, industries, business models, countries (by the head office's country where it is known, otherwise the main market the company's website serves), the types of announcement and the technologies a likely next adoption is predicted for (fokals_likely_next)."
     args_schema: type[BaseModel] = ListFiltersInput
     endpoint: str = "list_filters"
 
