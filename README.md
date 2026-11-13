@@ -1,5 +1,7 @@
 # langchain-fokals
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/fokals/langchain-fokals/badge)](https://scorecard.dev/viewer/?uri=github.com/fokals/langchain-fokals)
+
 LangChain tools for [Fokals](https://www.fokals.com).
 
 AI-powered company intelligence on how companies around the world grow, change and compete. Fokals derives advanced signals from company data, covering everything from technology and hiring to funding, buying intent and company health. Refreshed every day and brought together into a clear view of every market.
