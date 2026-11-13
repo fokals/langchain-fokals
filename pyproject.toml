@@ -38,7 +38,7 @@ Issues = "https://github.com/fokals/langchain-fokals/issues"
 [dependency-groups]
 test = [
     "langchain-tests==1.1.9",
-    "pytest>=8",
+    "pytest>=9.2.0",
     "pytest-asyncio>=1.3",
     "pytest-socket>=0.7",
 ]
